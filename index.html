@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BFS & DFS — Final Exam Study Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Cairo:wght@400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap');
+  :root {
+    --bg: #0d0f14;
+    --surface: #161b27;
+    --surface2: #1e2536;
+    --border: #2a3348;
+    --accent-bfs: #00c9ff;
+    --accent-dfs: #ff6b35;
+    --accent-green: #39d98a;
+    --accent-red: #ff4d6d;
+    --accent-yellow: #ffd166;
+    --text: #e2e8f0;
+    --text-muted: #8892a4;
+    --arabic: #c9d1d9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif; line-height: 1.7; }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0d1b2a 0%, #1a2744 50%, #0d1b2a 100%);
+    border-bottom: 2px solid var(--accent-bfs);
+    padding: 40px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(0,201,255,0.03) 60px, rgba(0,201,255,0.03) 61px),
+                repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(0,201,255,0.03) 60px, rgba(0,201,255,0.03) 61px);
+  }
+  header h1 { font-size: 2.8rem; font-weight: 700; color: var(--accent-bfs); position: relative; }
+  header p { color: var(--text-muted); font-size: 1.1rem; margin-top: 8px; position: relative; }
+  .arabic-sub { font-family: 'Cairo', sans-serif; color: var(--arabic); font-size: 1rem; margin-top: 4px; }
+
+  /* ── NAV TABS ── */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 100; }
+  .tab-btn {
+    flex: 1; padding: 14px; background: none; border: none; color: var(--text-muted);
+    cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 600;
+    border-bottom: 3px solid transparent; transition: all .25s;
+  }
+  .tab-btn:hover { color: var(--text); background: var(--surface2); }
+  .tab-btn.active { color: var(--accent-bfs); border-bottom-color: var(--accent-bfs); }
+
+  /* ── SECTIONS ── */
+  .section { display: none; max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+  .section.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin-bottom: 20px;
+    transition: border-color .2s;
+  }
+  .card:hover { border-color: var(--accent-bfs); }
+  .card h2 { font-size: 1.4rem; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+  .card h3 { font-size: 1.1rem; color: var(--accent-bfs); margin: 16px 0 8px; }
+  .card.dfs h3 { color: var(--accent-dfs); }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem;
+    font-weight: 600; letter-spacing: .5px;
+  }
+  .badge-bfs { background: rgba(0,201,255,.15); color: var(--accent-bfs); }
+  .badge-dfs { background: rgba(255,107,53,.15); color: var(--accent-dfs); }
+  .badge-trick { background: rgba(255,209,102,.15); color: var(--accent-yellow); }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: #0a0d12; border: 1px solid var(--border); border-radius: 8px;
+    padding: 18px; overflow-x: auto; font-family: 'Fira Code', monospace; font-size: 0.88rem;
+    line-height: 1.6; margin: 12px 0;
+  }
+  .kw { color: #c792ea; }
+  .fn { color: #82aaff; }
+  .st { color: #c3e88d; }
+  .cm { color: #546e7a; font-style: italic; }
+  .nb { color: var(--accent-yellow); }
+  .op { color: var(--accent-bfs); }
+
+  /* ── COMPARISON TABLE ── */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th { background: var(--surface2); padding: 12px 16px; text-align: left; font-weight: 600; border: 1px solid var(--border); }
+  td { padding: 10px 16px; border: 1px solid var(--border); }
+  tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+  .green { color: var(--accent-green); }
+  .red { color: var(--accent-red); }
+  .yellow { color: var(--accent-yellow); }
+
+  /* ── ARABIC NOTES ── */
+  .ar-note {
+    background: rgba(201,209,217,.05); border-right: 4px solid var(--accent-yellow);
+    border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0;
+    font-family: 'Cairo', sans-serif; color: var(--arabic); direction: rtl; text-align: right;
+    font-size: 0.95rem;
+  }
+  .trick-box {
+    background: rgba(255,209,102,.07); border: 1px solid rgba(255,209,102,.3);
+    border-radius: 8px; padding: 16px; margin: 12px 0;
+  }
+  .trick-box::before { content: '⚡ TRICK: '; color: var(--accent-yellow); font-weight: 700; }
+
+  /* ── QUIZ ── */
+  .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .score-board {
+    display: flex; gap: 20px; background: var(--surface); border-radius: 10px;
+    padding: 14px 20px; border: 1px solid var(--border);
+  }
+  .score-item { text-align: center; }
+  .score-item .val { font-size: 1.6rem; font-weight: 700; }
+  .score-item .lbl { font-size: 0.75rem; color: var(--text-muted); }
+  .q-type-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .filter-btn {
+    padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+    background: none; color: var(--text-muted); cursor: pointer; font-size: 0.82rem; font-family: inherit;
+    transition: all .2s;
+  }
+  .filter-btn.active { background: var(--accent-bfs); color: #000; border-color: var(--accent-bfs); font-weight: 600; }
+
+  .question-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 22px; margin-bottom: 18px; transition: all .2s;
+  }
+  .question-card.correct { border-color: var(--accent-green); background: rgba(57,217,138,.05); }
+  .question-card.wrong { border-color: var(--accent-red); background: rgba(255,77,109,.05); }
+  .q-meta { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .q-num { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+  .q-text { font-size: 1rem; font-weight: 500; margin-bottom: 16px; line-height: 1.6; }
+  .q-text code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-family: 'Fira Code', monospace; font-size: 0.85em; color: var(--accent-bfs); }
+  .options { display: grid; gap: 8px; }
+  .option-btn {
+    display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px;
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    cursor: pointer; text-align: left; color: var(--text); font-family: inherit; font-size: 0.92rem;
+    transition: all .2s; width: 100%;
+  }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent-bfs); background: rgba(0,201,255,.05); }
+  .option-btn.selected { border-color: var(--accent-bfs); background: rgba(0,201,255,.1); }
+  .option-btn.correct-ans { border-color: var(--accent-green); background: rgba(57,217,138,.12); color: var(--accent-green); }
+  .option-btn.wrong-ans { border-color: var(--accent-red); background: rgba(255,77,109,.12); color: var(--accent-red); }
+  .opt-letter { width: 22px; height: 22px; border-radius: 50%; border: 1px solid currentColor; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .explanation {
+    display: none; margin-top: 14px; padding: 14px; background: rgba(0,201,255,.05);
+    border-left: 3px solid var(--accent-bfs); border-radius: 0 8px 8px 0; font-size: 0.9rem;
+  }
+  .explanation.show { display: block; }
+  .explanation.wrong-exp { border-left-color: var(--accent-red); background: rgba(255,77,109,.05); }
+  pre.q-code { font-size: 0.82rem; padding: 12px; margin: 8px 0 12px; }
+
+  .submit-btn {
+    background: linear-gradient(135deg, var(--accent-bfs), #0078d4);
+    color: #000; border: none; padding: 14px 36px; border-radius: 8px;
+    font-size: 1rem; font-weight: 700; cursor: pointer; font-family: inherit;
+    transition: transform .1s; display: block; margin: 30px auto 10px;
+  }
+  .submit-btn:hover { transform: translateY(-1px); }
+
+  .progress-bar-wrap { background: var(--surface2); border-radius: 10px; height: 8px; margin-bottom: 24px; overflow: hidden; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent-bfs), var(--accent-green)); border-radius: 10px; transition: width .4s; }
+
+  /* Graph SVG */
+  .graph-container { text-align: center; margin: 16px 0; }
+  svg text { font-family: 'Space Grotesk', sans-serif; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1> BFS &amp; DFS </h1>
+  <p>Complete Syntax · Tricks · 50 Exam-Level Questions</p>
+  <div class="arabic-sub">By : ENG / Moataz Hussein</div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('theory')">📖 Theory & Syntax</button>
+  <button class="tab-btn" onclick="showTab('comparison')">⚖️ BFS vs DFS</button>
+  <button class="tab-btn" onclick="showTab('quiz')">🎯 50 Questions</button>
+</div>
+
+<!-- ════════════════ THEORY SECTION ════════════════ -->
+<div id="theory" class="section active">
+
+  <div class="card">
+    <h2><span class="badge badge-bfs">BFS</span> Breadth-First Search </h2>
+    <div class="ar-note">
+      BFS بتستكشف الجراف مستوى مستوى (level by level). بتبدأ من Node first وبتزور كل الchild الأول قبل ما تنزل للمستوى التاني.
+      بتستخدم Queue (FIFO) — اللي بيدخل أول بيطلع أول.
+    </div>
+    <h3>Core Data Structures</h3>
+    <pre><span class="cm"># الأدوات الأساسية</span>
+<span class="kw">from</span> collections <span class="kw">import</span> deque
+
+queue <span class="op">=</span> deque([start_node])   <span class="cm"># FIFO Queue — الطابور</span>
+visited <span class="op">=</span> {start_node}        <span class="cm"># set — عشان نتجنب التكرار</span>
+parents <span class="op">=</span> {start_node: <span class="nb">None</span>}  <span class="cm"># dict — عشان نعرف المسار</span></pre>
+
+    <h3>Full BFS Implementation </h3>
+    <pre><span class="kw">from</span> collections <span class="kw">import</span> deque
+
+<span class="kw">def</span> <span class="fn">bfs</span>(graph, start_node, goal_node):
+    queue <span class="op">=</span> deque([start_node])         <span class="cm"># 1. Init queue with start</span>
+    visited <span class="op">=</span> {start_node}              <span class="cm"># 2. Mark start as visited</span>
+    parents <span class="op">=</span> {start_node: <span class="nb">None</span>}        <span class="cm"># 3. Track parents for path</span>
+
+    <span class="kw">while</span> queue:
+        current_node <span class="op">=</span> queue.popleft()  <span class="cm"># FIFO: remove from front</span>
+
+        <span class="kw">if</span> current_node <span class="op">==</span> goal_node:    <span class="cm"># Goal check</span>
+            <span class="kw">break</span>
+
+        <span class="kw">for</span> child <span class="kw">in</span> graph[current_node]:
+            <span class="kw">if</span> child <span class="kw">not in</span> visited:
+                visited.add(child)
+                queue.append(child)
+                parents[child] <span class="op">=</span> current_node  <span class="cm"># Store parent</span>
+
+    <span class="cm"># Path reconstruction (trace back)</span>
+    <span class="kw">if</span> goal_node <span class="kw">in</span> parents:
+        path <span class="op">=</span> []
+        <span class="kw">while</span> goal_node:
+            path.append(goal_node)
+            goal_node <span class="op">=</span> parents[goal_node]  <span class="cm"># Go to parent</span>
+        path.reverse()                          <span class="cm"># Reverse to get start→goal</span>
+        <span class="fn">print</span>(path)</pre>
+
+    <div class="trick-box">
+      <strong>Order of operations:</strong> Check <code>not in visited</code> BEFORE adding to queue, then <code>visited.add()</code>, then <code>queue.append()</code>. If you check AFTER popping — you may visit same node multiple times!
+    </div>
+    <div class="ar-note">
+      ترتيب العمليات مهم جداً: بنعمل visited.add() لما بنضيف للـ queue مش لما بنـ pop.
+      لو بنعمله لما بنـ pop، ممكن نضيف نفس العقدة للـ queue أكتر من مرة!
+    </div>
+    <h3>Key Properties (حاسس اننا دخلنا هنا في الداتااستراكشر شوية)</h3>
+    <ul style="padding-left:20px;line-height:2">
+      <li><strong>Complete:</strong> Yes — will always find solution if one exists</li>
+      <li><strong>Optimal:</strong> Yes — finds shortest path (in unweighted graphs)</li>
+      <li><strong>Time Complexity:</strong> O(V + E)</li>
+      <li><strong>Space Complexity:</strong> O(V) — stores all nodes in queue</li>
+      <li><strong>Data Structure:</strong> Queue (deque) — popleft() = FIFO</li>
+    </ul>
+  </div>
+
+  <div class="card dfs">
+    <h2><span class="badge badge-dfs">DFS</span> Depth-First Search   </h2>
+    <div class="ar-note">
+      DFS بتنزل عمق في الجراف قدر ما تقدر قبل ما ترجع. بتستخدم Stack (LIFO) — اللي بيدخل آخر بيطلع أول.
+      الفكرة: خش في أعمق طريق ممكن، لو وصلت لـ dead end ارجع وجرب طريق تاني.
+    </div>
+    <h3>Full DFS Implementation (from lecture)</h3>
+    <pre><span class="kw">def</span> <span class="fn">dfs</span>(graph, start, goal):
+    stack <span class="op">=</span> [start]       <span class="cm"># Stack (list) — LIFO</span>
+    pathList <span class="op">=</span> [start]   <span class="cm"># Track visited order</span>
+
+    <span class="kw">while</span> stack:
+        node <span class="op">=</span> stack.pop()  <span class="cm"># LIFO: remove from back</span>
+
+        <span class="kw">if</span> node <span class="op">==</span> goal:
+            <span class="kw">return</span> pathList  <span class="cm"># Goal found</span>
+
+        <span class="kw">for</span> neighbor <span class="kw">in</span> <span class="fn">reversed</span>(graph.get(node, [])):
+            stack.append(neighbor)
+        <span class="kw">if</span>(neighbor <span class="kw">not in</span> pathList):
+            pathList.append(neighbor)
+
+    <span class="kw">return</span> <span class="nb">None</span>  <span class="cm"># No path found</span></pre>
+
+    <div class="trick-box">
+      <strong>Why reversed()?</strong> When pushing to a stack, the first child should be processed first. Since stack pops from the end, we push in reversed order so the first child ends up on top.
+      <br>Example: children = [B, C] → push reversed = [C, B] → stack top = B → B pops first ✓
+    </div>
+    <div class="ar-note">
+      ليه بنستخدم reversed()؟ لأن الـ stack بيطلع من الآخر، لو عندنا أولاد [B, C] وعايزين B يتزار الأول، لازم نـ push بترتيب معكوس [C, B] عشان B يبقى فوق.
+    </div>
+    <h3>DFS Properties</h3>
+    <ul style="padding-left:20px;line-height:2">
+      <li><strong>Complete:</strong> <span class="red">Not guaranteed</span> (infinite graphs / cycles)</li>
+      <li><strong>Optimal:</strong> <span class="red">No</span> — may not find shortest path</li>
+      <li><strong>Time Complexity:</strong> O(V + E)</li>
+      <li><strong>Space Complexity:</strong> O(depth) — uses less memory than BFS</li>
+      <li><strong>Data Structure:</strong> Stack (list) — pop() = LIFO</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2> Critical Syntax Tricks</h2>
+    <h3>popleft() vs pop()</h3>
+    <pre><span class="cm"># BFS uses deque — popleft() removes from FRONT</span>
+queue.popleft()   <span class="cm"># O(1) — efficient!</span>
+
+<span class="cm"># DFS uses list — pop() removes from END (LIFO)</span>
+stack.pop()       <span class="cm"># O(1)</span>
+
+<span class="cm"># WRONG for BFS: list.pop(0) is O(n) — slow!</span>
+<span class="cm"># DO NOT use list.pop(0) for BFS</span></pre>
+
+    <h3>Graph Representation</h3>
+    <pre><span class="cm"># Adjacency list (dict of lists) — used in lecture</span>
+graph <span class="op">=</span> {
+    <span class="st">'A'</span>: [<span class="st">'B1'</span>, <span class="st">'C2'</span>],     <span class="cm"># A connects to B1 and C2</span>
+    <span class="st">'B1'</span>: [<span class="st">'D1'</span>, <span class="st">'E1'</span>],
+    <span class="st">'C2'</span>: [<span class="st">'D2'</span>, <span class="st">'G'</span>],
+    <span class="st">'G'</span>: []                   <span class="cm"># Goal — no children</span>
+}</pre>
+
+    <h3>visited Set vs. List</h3>
+    <pre><span class="cm"># Use SET for visited — O(1) lookup</span>
+visited <span class="op">=</span> set()
+visited.add(<span class="st">'A'</span>)
+<span class="st">'A'</span> <span class="kw">in</span> visited   <span class="cm"># True — O(1)</span>
+
+<span class="cm"># Using list would be O(n) for 'in' check — inefficient</span></pre>
+
+    <h3>Path Reconstruction Pattern</h3>
+    <pre><span class="cm"># parents dict maps child → parent</span>
+parents <span class="op">=</span> {<span class="st">'A'</span>: <span class="nb">None</span>, <span class="st">'B'</span>: <span class="st">'A'</span>, <span class="st">'G'</span>: <span class="st">'B'</span>}
+
+<span class="cm"># Trace back from goal to start</span>
+path <span class="op">=</span> []
+node <span class="op">=</span> <span class="st">'G'</span>
+<span class="kw">while</span> node:
+    path.append(node)
+    node <span class="op">=</span> parents[node]
+path.reverse()  <span class="cm"># ['A', 'B', 'G']</span></pre>
+
+    <div class="trick-box">
+      The while loop stops when <code>parents[node]</code> returns <code>None</code> (start node). Since <code>None</code> is falsy in Python, <code>while node:</code> stops when node becomes None.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Tracing BFS on the Lecture Graph</h2>
+    <div class="graph-container">
+      <svg width="560" height="220" viewBox="0 0 560 220">
+        <defs><marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#546e7a"/></marker></defs>
+        <!-- Edges -->
+        <line x1="80" y1="60" x2="190" y2="60" stroke="#546e7a" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="80" y1="60" x2="190" y2="140" stroke="#546e7a" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="210" y1="60" x2="310" y2="40" stroke="#546e7a" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="210" y1="60" x2="310" y2="80" stroke="#546e7a" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="210" y1="140" x2="310" y2="120" stroke="#546e7a" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="210" y1="140" x2="480" y2="100" stroke="#546e7a" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="330" y1="40" x2="420" y2="30" stroke="#546e7a" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="330" y1="40" x2="420" y2="70" stroke="#546e7a" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="330" y1="120" x2="420" y2="150" stroke="#546e7a" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="440" y1="30" x2="480" y2="100" stroke="#546e7a" stroke-width="1.5" marker-end="url(#arr)"/>
+        <line x1="440" y1="70" x2="480" y2="100" stroke="#546e7a" stroke-width="1.5" marker-end="url(#arr)"/>
+        <!-- Nodes -->
+        <circle cx="80" cy="60" r="20" fill="#1e2536" stroke="#00c9ff" stroke-width="2"/>
+        <text x="80" y="65" text-anchor="middle" fill="#00c9ff" font-size="13" font-weight="bold">A</text>
+        <circle cx="200" cy="60" r="20" fill="#1e2536" stroke="#546e7a" stroke-width="1.5"/>
+        <text x="200" y="65" text-anchor="middle" fill="#e2e8f0" font-size="11">B1</text>
+        <circle cx="200" cy="140" r="20" fill="#1e2536" stroke="#546e7a" stroke-width="1.5"/>
+        <text x="200" y="145" text-anchor="middle" fill="#e2e8f0" font-size="11">C2</text>
+        <circle cx="320" cy="40" r="20" fill="#1e2536" stroke="#546e7a" stroke-width="1.5"/>
+        <text x="320" y="45" text-anchor="middle" fill="#e2e8f0" font-size="11">D1</text>
+        <circle cx="320" cy="80" r="20" fill="#1e2536" stroke="#546e7a" stroke-width="1.5"/>
+        <text x="320" y="85" text-anchor="middle" fill="#e2e8f0" font-size="11">E1</text>
+        <circle cx="320" cy="120" r="20" fill="#1e2536" stroke="#546e7a" stroke-width="1.5"/>
+        <text x="320" y="125" text-anchor="middle" fill="#e2e8f0" font-size="11">D2</text>
+        <circle cx="430" cy="30" r="20" fill="#1e2536" stroke="#546e7a" stroke-width="1.5"/>
+        <text x="430" y="35" text-anchor="middle" fill="#e2e8f0" font-size="11">C1</text>
+        <circle cx="430" cy="70" r="20" fill="#1e2536" stroke="#546e7a" stroke-width="1.5"/>
+        <text x="430" y="75" text-anchor="middle" fill="#e2e8f0" font-size="11">F1</text>
+        <circle cx="430" cy="150" r="20" fill="#1e2536" stroke="#546e7a" stroke-width="1.5"/>
+        <text x="430" y="155" text-anchor="middle" fill="#e2e8f0" font-size="11">B2</text>
+        <circle cx="490" cy="100" r="22" fill="#1e2536" stroke="#39d98a" stroke-width="2.5"/>
+        <text x="490" y="105" text-anchor="middle" fill="#39d98a" font-size="14" font-weight="bold">G</text>
+      </svg>
+    </div>
+    <h3>BFS Trace: A → G</h3>
+    <table>
+      <tr><th>Step</th><th>Current</th><th>Queue (after)</th><th>Visited</th></tr>
+      <tr><td>1</td><td>A</td><td>[B1, C2]</td><td>{A, B1, C2}</td></tr>
+      <tr><td>2</td><td>B1</td><td>[C2, D1, E1]</td><td>{A,B1,C2,D1,E1}</td></tr>
+      <tr><td>3</td><td>C2</td><td>[D1, E1, D2, <span class="green">G</span>]</td><td>+D2, G</td></tr>
+      <tr><td>4</td><td>D1</td><td>[E1, D2, G, C1, F1]</td><td>+C1, F1</td></tr>
+      <tr><td>5</td><td>E1</td><td>[D2, G, C1, F1]</td><td>no new</td></tr>
+      <tr><td>6</td><td>D2</td><td>[G, C1, F1, B2]</td><td>+B2</td></tr>
+      <tr><td>7</td><td class="green">G</td><td>—</td><td>GOAL FOUND!</td></tr>
+    </table>
+    <p style="margin-top:12px;color:var(--accent-green)">✓ Path found: A → C2 → G (shortest path, 2 edges)</p>
+  </div>
+
+</div>
+
+<!-- ════════════════ COMPARISON SECTION ════════════════ -->
+<div id="comparison" class="section">
+  <div class="card">
+    <h2> BFS vs DFS — Full Comparison</h2>
+    <table>
+      <tr><th>Property</th><th>BFS</th><th>DFS</th></tr>
+      <tr><td>Data Structure</td><td class="yellow">Queue (deque)</td><td class="yellow">Stack (list)</td></tr>
+      <tr><td>Method</td><td>popleft()</td><td>pop()</td></tr>
+      <tr><td>Order</td><td>FIFO</td><td>LIFO</td></tr>
+      <tr><td>Traversal</td><td>Level by level (Horizontal)</td><td>Go deep first (Vertical)</td></tr>
+      <tr><td>Finds Shortest Path?</td><td class="green">✓ Yes (unweighted)</td><td class="red">✗ No</td></tr>
+      <tr><td>Complete?</td><td class="green">✓ Yes</td><td class="red">✗ Not always</td></tr>
+      <tr><td>Memory Usage</td><td class="red">More (all nodes in queue)</td><td class="green">Less (only path nodes)</td></tr>
+      <tr><td>Time Complexity</td><td>O(V + E)</td><td>O(V + E)</td></tr>
+      <tr><td>Space Complexity</td><td>O(V)</td><td>O(depth)</td></tr>
+      <tr><td>Best for</td><td>Shortest path, level-order</td><td>Cycle detection, topological sort</td></tr>
+      <tr><td>Import used</td><td>from collections import deque</td><td>No import needed (uses list)</td></tr>
+    </table>
+
+    <div class="ar-note">
+      الفرق الجوهري: BFS بتحل مستوى مستوى (عرض)، DFS بتنزل بعمق. BFS بتضمن أقصر مسار في الجراف الغير موزون.
+      BFS بتاكل ذاكرة أكتر لأنها بتخزن كل الجيران، DFS بتاكل ذاكرة أقل لأنها بس بتخزن المسار الحالي.
+    </div>
+
+    <h3>Code Skeleton Side by Side</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:12px">
+      <div>
+        <div class="badge badge-bfs" style="margin-bottom:8px;display:inline-block">BFS</div>
+        <pre>queue = deque([start])
+visited = {start}
+
+while queue:
+  node = queue.<span class="nb">popleft()</span>
+  if node == goal: break
+  for child in graph[node]:
+    if child not in visited:
+      visited.add(child)
+      queue.append(child)</pre>
+      </div>
+      <div>
+        <div class="badge badge-dfs" style="margin-bottom:8px;display:inline-block">DFS</div>
+        <pre>stack = [start]
+visited = {start}
+
+while stack:
+  node = stack.<span class="nb">pop()</span>
+  if node == goal: break
+  for n in reversed(graph[node]):
+    if n not in visited:
+      visited.add(n)
+      stack.append(n)</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ QUIZ SECTION ════════════════ -->
+<div id="quiz" class="section">
+  <div class="quiz-header">
+    <div>
+      <h2 style="font-size:1.5rem">🎯 50 Exam-Level Questions</h2>
+      <p style="color:var(--text-muted);font-size:.9rem">BFS &amp; DFS — Mixed Difficulty</p>
+    </div>
+    <div class="score-board">
+      <div class="score-item"><div class="val" id="score-correct" style="color:var(--accent-green)">0</div><div class="lbl">Correct</div></div>
+      <div class="score-item"><div class="val" id="score-wrong" style="color:var(--accent-red)">0</div><div class="lbl">Wrong</div></div>
+      <div class="score-item"><div class="val" id="score-total">0/50</div><div class="lbl">Done</div></div>
+    </div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+  <div class="q-type-filter">
+    <button class="filter-btn active" onclick="filterQ('all',this)">All (50)</button>
+    <button class="filter-btn" onclick="filterQ('tracing',this)">Tracing (18)</button>
+    <button class="filter-btn" onclick="filterQ('code',this)">Code (12)</button>
+    <button class="filter-btn" onclick="filterQ('theoretical',this)">Theoretical (8)</button>
+    <button class="filter-btn" onclick="filterQ('tricky',this)">Tricky (12)</button>
+  </div>
+  <div id="quiz-container"></div>
+</div>
+
+<script>
+const questions = [
+// ── THEORETICAL (8) ──
+{type:'theoretical', q:`What is the main data structure used internally by BFS?`,
+ opts:['Stack (LIFO)','Queue (FIFO)','Priority Queue','Linked List'], ans:1,
+ exp:`BFS uses a Queue (FIFO — First In First Out). In Python we use <code>collections.deque</code> and call <code>popleft()</code>.`},
+
+{type:'theoretical', q:`Which search algorithm guarantees finding the shortest path in an unweighted graph?`,
+ opts:['DFS','BFS','Both equally','Neither'], ans:1,
+ exp:`BFS explores nodes level by level, so the first time it reaches the goal, it has found the shortest path in terms of number of edges.`},
+
+{type:'theoretical', q:`What happens if we use a list and <code>pop(0)</code> instead of <code>deque.popleft()</code> in BFS?`,
+ opts:['No difference, both are O(1)','Correctness changes','Performance degrades to O(n²) total','The graph cannot be traversed'], ans:2,
+ exp:`<code>list.pop(0)</code> is O(n) because it shifts all elements left. For n operations this becomes O(n²). <code>deque.popleft()</code> is O(1).`},
+
+{type:'theoretical', q:`In DFS from the lecture, why is <code>reversed()</code> used when iterating over neighbors?`,
+ opts:['To randomize traversal order','To maintain left-to-right traversal order when using a stack','To avoid revisiting nodes','To sort neighbors alphabetically'], ans:1,
+ exp:`The stack processes elements LIFO. If children are [B, C], pushing C then B means B is on top and processed first — matching left-to-right order. So we push in reversed order.`},
+
+{type:'theoretical', q:`Which property does BFS satisfy that DFS does NOT?`,
+ opts:['Visits all nodes','Uses O(V) space','Completeness in infinite graphs','Optimality in unweighted graphs'], ans:3,
+ exp:`BFS is both complete and optimal for unweighted graphs. DFS is complete only for finite graphs and is NOT optimal (doesn't guarantee shortest path).`},
+
+
+{type:'theoretical', q:`What is the space complexity of BFS in terms of vertices V?`,
+ opts:['O(1)','O(log V)','O(V)','O(V²)'], ans:2,
+ exp:`BFS stores all discovered nodes in its queue and visited set. In the worst case (all nodes at same level), this is O(V).`},
+
+{type:'theoretical', q:`In the lecture's DFS, what does <code>pathList</code> represent?`,
+ opts:['The optimal shortest path','The order in which nodes were first discovered','All possible paths','Nodes at the current depth level'], ans:1,
+ exp:`In the lecture's DFS, <code>pathList</code> tracks the traversal order — which nodes were discovered and when. It is NOT necessarily the optimal path.`},
+
+// ── TRACING (18) ──
+{type:'tracing', q:`Given this graph: <code>{'A':['B','C'], 'B':['D'], 'C':['D','E'], 'D':[], 'E':[]}</code>
+What is the BFS traversal order starting from A (goal = E)?`,
+ opts:['A, B, C, D, E','A, B, D, C, E','A, C, B, E, D','A, B, C, E'], ans:0,
+ exp:`BFS visits level by level: Level 0: A → Level 1: B,C → Level 2: D,E. When we dequeue C, we add D and E. Next we dequeue D (no children), then E = GOAL!`},
+
+{type:'tracing', q:`Trace BFS on: <code>{'S':['A','B'], 'A':['C'], 'B':['C','D'], 'C':[], 'D':[]}</code>
+Starting from S, what is the state of the queue after processing node A?`,
+ opts:['[B, C]','[C, B]','[B, C, D]','[C]'], ans:0,
+ exp:`Start: queue=[S], visited={S}. Pop S → add A,B → queue=[A,B], visited={S,A,B}. Pop A → add C (not visited) → queue=[B,C], visited={S,A,B,C}.`},
+
+{type:'tracing', q:`In DFS on <code>{'A':['B','C'], 'B':['D'], 'C':['E'], 'D':[], 'E':[]}</code> starting from A (goal=E):
+What path does the lecture's DFS algorithm find?`,
+ opts:['A → C → E','A → B → D → C → E','A → B → C → E','A → C → B → E'], ans:0,
+ exp:`DFS with reversed() pushes C,B → stack top is B. Wait — reversed(['B','C'])=['C','B'], so B is pushed last → B is on top. Pop B → push D → Pop D → backtrack to C → Pop C → push E → Pop E = GOAL. Path: A→B→D→C→E? Let's retrace: reversed(['B','C'])=['C','B'] pushed in order, so stack=[C,B], pop B first, push reversed([D])=[D], pop D (no children), pop C, push reversed([E])=[E], pop E=GOAL. Path depends on pathList tracking.`},
+
+{type:'tracing', q:`BFS on graph: <code>{'1':['2','3'], '2':['4','5'], '3':['5'], '4':[], '5':[]}</code>
+How many nodes are in <code>visited</code> when node 5 is first added to the queue?`,
+ opts:['3','4','5','6'], ans:2,
+ exp:`Pop 1 → add 2,3. visited={1,2,3}. Pop 2 → add 4,5. visited={1,2,3,4,5}. All 5 nodes are in visited when 5 is added to queue.`},
+
+{type:'tracing', q:`Given BFS starting at node 'S' on:
+<code>{'S':['A','B'], 'A':['X','Y'], 'B':['C','D'], 'X':['E'], 'Y':[], 'C':['E'], 'D':[], 'E':[]}</code>
+What is the BFS order of visited nodes?`,
+ opts:['S,A,B,X,Y,C,D,E','S,A,X,E,Y,B,C,D','S,B,A,D,C,Y,X,E','S,A,B,Y,X,D,C,E'], ans:0,
+ exp:`Level 0: S. Level 1: A,B. Level 2: X,Y,C,D. Level 3: E. BFS visits exactly in this order.`},
+
+{type:'tracing', q:`What is the <code>parents</code> dictionary after BFS finds G in the lecture graph?
+Graph: <code>{'A':['B1','C2'], 'B1':['D1','E1'], 'C2':['D2','G'], 'D1':[], 'E1':[], 'D2':[], 'G':[]}</code>`,
+ opts:[`{'A':None,'B1':'A','C2':'A','D1':'B1','E1':'B1','D2':'C2','G':'C2'}`,
+       `{'A':None,'B1':'A','C2':'A','G':'C2'}`,
+       `{'G':'C2','C2':'A','A':None}`,
+       `{'A':'B1','B1':'C2','C2':'G'}`], ans:0,
+ exp:`BFS adds all nodes it discovers to parents. Each node's value is the node from which it was first reached.`},
+
+{type:'tracing', q:`After BFS path reconstruction for the lecture graph (A→G), what does <code>path.reverse()</code> do to: <code>['G','C2','A']</code>?`,
+ opts:["Returns ['A','C2','G']","Keeps ['G','C2','A'] unchanged","Creates a new list ['A','C2','G']","Raises an error"], ans:0,
+ exp:`<code>list.reverse()</code> modifies the list IN PLACE and returns None. So path becomes ['A','C2','G'], which is the correct start→goal order.`},
+
+{type:'tracing', q:`Trace DFS on <code>{'A':['B','C'], 'B':['D','E'], 'C':['F'], 'D':[], 'E':[], 'F':[]}</code>
+Starting from A, what is the stack state after processing B (using reversed)?`,
+ opts:['[C, D, E]','[C, E, D]','[D, E, C]','[E, D, C]'], ans:0,
+ exp:`Start: stack=[A]. Pop A → push reversed([B,C])=[C,B] → stack=[C,B]. Pop B → push reversed([D,E])=[E,D] → stack=[C,E,D]. Stack = [C, E, D].`},
+
+{type:'tracing', q:`In BFS, what is the visiting order for a complete binary tree with 7 nodes?
+Root=1, Level1=[2,3], Level2=[4,5,6,7]. Start=1, Goal=7.`,
+ opts:['1,2,3,4,5,6,7','1,2,4,5,3,6,7','1,3,2,7,6,5,4','1,2,3,7'], ans:0,
+ exp:`BFS visits level by level: Level 0: 1. Level 1: 2,3. Level 2: 4,5,6,7. This is exactly 1,2,3,4,5,6,7.`},
+
+{type:'tracing', q:`Given: <code>queue = deque(['B','C'])</code>, what is the queue state after <code>queue.popleft()</code> and then <code>queue.append('D')</code>?`,
+ opts:["deque(['D','C'])","deque(['C','D'])","deque(['B','D'])","deque(['D'])"], ans:1,
+ exp:`popleft() removes 'B' from front → deque(['C']). Then append('D') adds to back → deque(['C','D']).`},
+
+{type:'tracing', q:`DFS on <code>{'A':['B','C'], 'B':[], 'C':['D'], 'D':['E'], 'E':[]}</code>. Start=A, Goal=E.
+What is the DFS traversal path (using reversed)?`,
+ opts:['A,B,C,D,E','A,C,D,E','A,B,C,D,E','A,C,B,E'], ans:0,
+ exp:`Stack=[A]. Pop A → push reversed([B,C])=[C,B] → stack=[C,B]. Pop B → no neighbors → stack=[C]. Pop C → push [D] → stack=[D]. Pop D → push [E] → stack=[E]. Pop E = GOAL. Visited order: A,B,C,D,E.`},
+
+{type:'tracing', q:`BFS visits node X at step 4. How many levels away from the start is X guaranteed to be?`,
+ opts:['Exactly 4','At most 3','Exactly 3','Cannot be determined'], ans:3,
+ exp:`BFS processes nodes level by level, but the STEP number depends on how many nodes are in previous levels. If level 1 has 3 nodes, step 4 might still be level 1. The exact level cannot be determined just from the step number.`},
+
+{type:'tracing', q:`What is the state of the BFS visited set after processing the SECOND dequeued node in:
+<code>{'S':['A','B','C'], 'A':[], 'B':[], 'C':[]}</code> starting from S?`,
+ opts:['{S}','{S,A}','{S,A,B,C}','{S,A,B}'], ans:2,
+ exp:`Init: queue=[S], visited={S}. Pop S (1st) → add A,B,C → visited={S,A,B,C}. Pop A (2nd) → no neighbors. visited remains {S,A,B,C}.`},
+
+{type:'tracing', q:`DFS with stack. Initial: <code>stack=['A']</code>. A's neighbors = ['X','Y','Z'].
+After processing A with reversed(), what is the stack?`,
+ opts:["['Z','Y','X']","['X','Y','Z']","['Y','X','Z']","['X','Z','Y']"], ans:0,
+ exp:`reversed(['X','Y','Z']) = ['Z','Y','X']. These get pushed: first Z, then Y, then X. Stack top = X. stack = ['Z','Y','X'].`},
+
+{type:'tracing', q:`In the lecture BFS, after finding the goal, the algorithm reconstructs the path.
+If parents = {G: C2, C2: A, A: None}, what is the path list BEFORE reverse()?`,
+ opts:["['A','C2','G']","['G','C2','A']","['C2','G','A']","['G','A','C2']"], ans:1,
+ exp:`The while loop starts at G, appends G → follows to C2, appends C2 → follows to A, appends A → None stops loop. So path = ['G','C2','A']. Then reverse() gives ['A','C2','G'].`},
+
+{type:'tracing', q:`BFS on: <code>{'A':['B'], 'B':['C'], 'C':['A','D'], 'D':[]}</code>. Start=A, Goal=D.
+With cycle detection via visited set, what nodes are added to visited?`,
+ opts:['A,B,C,D','A,B,C,A,D','A,B,C','A,B'], ans:0,
+ exp:`Pop A → add B. Pop B → add C. Pop C → A already visited, skip; add D. Pop D = GOAL. Visited = {A,B,C,D}. Cycle A→B→C→A is handled by visited set.`},
+
+{type:'tracing', q:`What does the BFS output for the lecture graph starting at A, goal G?`,
+ opts:["Found a path from A to G: ['A', 'B1', 'D1', 'C1', 'G']",
+       "Found a path from A to G: ['A', 'C2', 'G']",
+       "Found a path from A to G: ['A', 'B1', 'G']",
+       "Could not find a path"], ans:1,
+ exp:`BFS finds the SHORTEST path. A→C2→G uses only 2 edges, which is shorter than any other path to G.`},
+
+{type:'tracing', q:`DFS stack operations: Push order matters. For graph <code>{'A':['B','C']}</code> with reversed():
+Stack after processing A is <code>['C','B']</code>. Which node is processed NEXT?`,
+ opts:['C (top of stack)','B (top of stack)','Both simultaneously','A again'], ans:1,
+ exp:`<code>stack.pop()</code> removes from the END (LIFO). The stack is ['C','B'], so pop() returns 'B' — the last element. B is processed next.`},
+
+// ── CODE QUESTIONS (12) ──
+{type:'code', q:`Which code correctly initializes BFS?`,
+ opts:[
+   `queue = [start]; visited = set(); visited.add(start)`,
+   `queue = deque([start]); visited = {start}`,
+   `queue = deque(); visited = {}; queue.push(start)`,
+   `stack = deque([start]); visited = {start}`
+ ], ans:1,
+ exp:`Correct BFS uses deque for efficient popleft(). Visited is initialized with start node already in it. Option A uses list (inefficient), C uses wrong method push(), D uses wrong variable name.`},
+
+{type:'code', q:`What is the bug in this BFS code?
+<pre class="q-code">def bfs(graph, start, goal):
+    queue = deque([start])
+    visited = set()
+    while queue:
+        node = queue.popleft()
+        visited.add(node)
+        if node == goal: return True
+        for child in graph[node]:
+            if child not in visited:
+                queue.append(child)
+    return False</pre>`,
+ opts:[
+   'No bug — this is correct BFS',
+   'visited.add() should happen before appending to queue',
+   'Should use pop() not popleft()',
+   'Should check goal before popleft()'
+ ], ans:1,
+ exp:`Bug: visited.add() is called when popping, not when appending. This means the same node can be added to the queue multiple times before it's visited — redundant work and potential infinite loops in cyclic graphs.`},
+
+{type:'code', q:`What does this code print?
+<pre class="q-code">from collections import deque
+q = deque(['A','B','C'])
+q.append('D')
+x = q.popleft()
+print(x, list(q))</pre>`,
+ opts:[
+   `D ['A','B','C']`,
+   `A ['B','C','D']`,
+   `C ['A','B','D']`,
+   `A ['D','B','C']`
+ ], ans:1,
+ exp:`append('D') adds to the right: deque=['A','B','C','D']. popleft() removes from the LEFT = 'A'. Remaining: ['B','C','D'].`},
+
+{type:'code', q:`Choose the correct DFS code that uses a stack:`,
+ opts:[
+   `stack = [start]\nwhile stack:\n    node = stack.popleft()\n    ...`,
+   `stack = deque([start])\nwhile stack:\n    node = stack.pop()\n    ...`,
+   `stack = [start]\nwhile stack:\n    node = stack.pop()\n    ...`,
+   `queue = [start]\nwhile queue:\n    node = queue.pop(0)\n    ...`
+ ], ans:2,
+ exp:`DFS uses a list (stack) with pop() from the end (LIFO). Option A: popleft() is BFS-style. Option B: deque is valid but unnecessary for DFS. Option D: pop(0) is BFS-style (and slow).`},
+
+{type:'code', q:`What is the output?
+<pre class="q-code">graph = {'A': ['B', 'C'], 'B': [], 'C': []}
+visited = {'A'}
+queue = deque(['A'])
+node = queue.popleft()
+for child in graph[node]:
+    if child not in visited:
+        visited.add(child)
+        queue.append(child)
+print(list(queue))</pre>`,
+ opts:["['A','B','C']","['B','C']","['C','B']","[]"], ans:1,
+ exp:`Pop A. Iterate A's children [B,C]. B not in visited → add B. C not in visited → add C. queue = deque(['B','C']). list(queue) = ['B','C'].`},
+
+{type:'code', q:`This path reconstruction code has a bug. Find it:
+<pre class="q-code">path = []
+node = goal
+while node:
+    path.append(node)
+    node = parents[node]
+print(path)</pre>`,
+ opts:[
+   'Missing path.reverse() at the end',
+   'Should be while node != None',
+   'parents[node] should be parents.get(node)',
+   'No bug — path is printed in start→goal order'
+ ], ans:0,
+ exp:`The loop traces goal→start, building path=['G','C2','A']. Without reverse(), the path is printed in REVERSE order (goal→start). Need path.reverse() before print().`},
+
+{type:'code', q:`What does <code>graph.get(node, [])</code> do in DFS?`,
+ opts:[
+   'Gets the value at index node, or empty list if index out of range',
+   'Returns graph[node] if node exists, else returns [] instead of raising KeyError',
+   'Checks if node is in the graph',
+   'Gets the last element of the graph'
+ ], ans:1,
+ exp:`dict.get(key, default) returns the value for key if present, otherwise returns default. If node is not in graph (no outgoing edges defined), returns [] instead of raising KeyError.`},
+
+{type:'code', q:`What is printed?
+<pre class="q-code">parents = {'G': 'C2', 'C2': 'A', 'A': None}
+path = []
+node = 'G'
+while node:
+    path.append(node)
+    node = parents[node]
+path.reverse()
+print(path)</pre>`,
+ opts:["['G','C2','A']","['A','C2','G']","['C2','G','A']","Error: None not iterable"], ans:1,
+ exp:`Loop: append G → node=C2. Append C2 → node=A. Append A → node=None. Stop. path=['G','C2','A']. After reverse(): ['A','C2','G'].`},
+
+{type:'code', q:`Which code correctly checks if BFS found the goal?`,
+ opts:[
+   `if goal_node in visited: print("found")`,
+   `if goal_node in parents: print("found")`,
+   `if goal_node in queue: print("found")`,
+   `if parents[goal_node] != None: print("found")`
+ ], ans:1,
+ exp:`After BFS, checking <code>if goal_node in parents</code> correctly tells us the goal was reached (parents is built only for reachable nodes). visited may include goal without tracking the path. Option D fails if goal is the start (parent is None).`},
+
+{type:'code', q:`What is the time complexity of <code>'X' in my_set</code> vs <code>'X' in my_list</code>?`,
+ opts:[
+   'Both O(1)',
+   'Both O(n)',
+   'Set: O(1), List: O(n)',
+   'Set: O(n), List: O(1)'
+ ], ans:2,
+ exp:`Python sets use hash tables — lookup is O(1) average. Lists require scanning all elements — lookup is O(n). This is why we use a set for visited in BFS/DFS.`},
+
+{type:'code', q:`What does <code>reversed(graph.get(node, []))</code> return?`,
+ opts:[
+   'A reversed list object',
+   'A reversed iterator (not a list)',
+   'None if node not in graph',
+   'The original list unchanged'
+ ], ans:1,
+ exp:`reversed() returns an iterator, not a list. It can be iterated with for loop. It does NOT create a new list in memory — it's memory-efficient. You'd need list(reversed(...)) to get a list.`},
+
+{type:'code', q:`Find the error in this DFS:
+<pre class="q-code">def dfs(graph, start, goal):
+    stack = [start]
+    visited = set()
+    while stack:
+        node = stack.pop()
+        if node in visited: continue
+        visited.add(node)
+        if node == goal: return visited
+        for n in graph[node]:
+            stack.append(n)  # No reversed!
+    return None</pre>`,
+ opts:[
+   'Conceptually correct but traversal order differs from lecture',
+   'Will cause infinite loop on cyclic graphs',
+   'visited.add() should be before the loop',
+   'stack.pop() should be stack.popleft()'
+ ], ans:0,
+ exp:`The code is conceptually correct (visited set prevents infinite loops). However, without reversed(), the traversal order is right-to-left instead of left-to-right. Also, marking visited on pop (not push) means duplicates can enter the stack.`},
+
+// ── TRICKY (12) ──
+{type:'tricky', q:`TRICKY: In the lecture's BFS, the visited set is initialized as <code>visited = {start_node}</code> BEFORE the while loop. What happens if you instead initialize it as <code>visited = set()</code> and add start inside the loop?`,
+ opts:[
+   'No difference in correctness or behavior',
+   'The start node could be added to the queue multiple times if it appears as a neighbor',
+   'BFS would run faster',
+   'Path reconstruction would fail'
+ ], ans:1,
+ exp:`If a neighbor of some node happens to be the start node, and start is not in visited yet (since we add to visited only on pop), the start node gets re-added to the queue. This causes redundant processing and can affect path reconstruction.`},
+
+{type:'tricky', q:`TRICKY: The lecture's DFS pathList doesn't accurately represent the path from start to goal. Why?`,
+ opts:[
+   'It only stores the first node visited',
+   'It stores nodes in reverse order',
+   'It stores ALL visited nodes, including dead ends, not just the goal path',
+   'It misses the goal node'
+ ], ans:2,
+ exp:`pathList in the lecture's DFS appends nodes as they're visited, including dead-end paths. For example, exploring B→D before finding the goal through C means D appears in pathList even though D is not on the actual goal path.`},
+
+{type:'tricky', q:`TRICKY: Consider BFS on this graph: <code>{'A':['B','C'], 'B':['C'], 'C':['D'], 'D':[]}</code>
+How many times is C added to the queue?`,
+ opts:['Once','Twice','Three times','Zero times'], ans:0,
+ exp:`In BFS, visited is checked BEFORE adding to queue. When A is processed: B added (visited={A,B}), C added (visited={A,B,C}). When B is processed: C already in visited — SKIPPED. C is added only ONCE. This is the advantage of the lecture's implementation.`},
+
+{type:'tricky', q:`TRICKY: What is the BFS path from S to G?
+<code>{'S':['A','G'], 'A':['B'], 'G':[], 'B':['G']}</code>`,
+ opts:['S → A → B → G','S → G','S → A → G','Cannot determine'], ans:1,
+ exp:`S's neighbors are [A, G]. BFS adds both A and G to the queue. When we pop A, G is already in visited! Wait — actually when we pop S and add G to queue, G is marked visited immediately. Then we pop A (not goal), then pop G — but G was already found as a direct neighbor of S. BFS finds S→G directly (1 edge), which is the shortest path.`},
+
+{type:'tricky', q:`TRICKY: In the path reconstruction loop:
+<code>while goal_node: path.append(goal_node); goal_node = parents[goal_node]</code>
+What if the start node is 'False' or 0?`,
+ opts:[
+   'Works perfectly fine',
+   'Loop terminates too early because 0 and False are falsy',
+   'Loop never terminates',
+   'KeyError is raised'
+ ], ans:1,
+ exp:`The condition <code>while goal_node:</code> checks truthiness. If start = 0 or False, when goal_node reaches the start, it becomes 0/False and the loop STOPS — missing the start node in the path. Better code: <code>while goal_node is not None:</code>`},
+
+{type:'tricky', q:`TRICKY: You run BFS and DFS on the SAME graph from the SAME start to the SAME goal. BFS finds path ['A','C','G'] and DFS finds path ['A','B','D','G']. Which statement is DEFINITELY true?`,
+ opts:[
+   'BFS path has fewer edges',
+   'DFS path is wrong',
+   'BFS path cost is lower',
+   "BFS path is always better"
+ ], ans:0,
+ exp:`BFS guarantees the SHORTEST path in terms of NUMBER OF EDGES. ['A','C','G'] has 2 edges, ['A','B','D','G'] has 3 edges. So BFS path DEFINITELY has fewer edges. However, in weighted graphs, fewer edges doesn't mean lower cost — BFS doesn't consider weights.`},
+
+{type:'tricky', q:`TRICKY: What happens when BFS is run on a DISCONNECTED graph where goal is unreachable?
+<pre class="q-code">if goal_node in parents:
+    # reconstruct path
+else:
+    print("Could not find")</pre>`,
+ opts:[
+   'BFS runs forever',
+   'KeyError is raised when checking parents',
+   'The else branch executes correctly',
+   'visited set prevents this scenario'
+ ], ans:2,
+ exp:`If goal is unreachable, it's never added to parents dict. The while loop terminates when queue is empty (no more nodes to explore). Then <code>goal_node in parents</code> is False, and the else branch prints "Could not find". BFS handles this gracefully.`},
+
+{type:'tricky', q:`TRICKY: In DFS, the stack can grow very large. What is the MAXIMUM stack size for a graph with depth D and branching factor B?`,
+ opts:['B × D','D × B^D','B^D','D + B'], ans:2,
+ exp:`At each level, we might push B new nodes. At depth D, the stack holds nodes from all unexplored branches. The maximum is O(B^D) — exponential in depth. This is why DFS can use enormous memory for wide trees despite being depth-first.`},
+
+{type:'tricky', q:`TRICKY: This code is run on graph <code>{'A':['A','B'], 'B':[]}</code>. A has a self-loop. What happens with BFS if visited includes start?`,
+ opts:[
+   'Infinite loop — A keeps getting re-added',
+   'Works correctly — A is already in visited when the self-loop is encountered',
+   'KeyError — cannot add A to itself',
+   'A is added to queue twice'
+ ], ans:1,
+ exp:`When processing A: child A is checked → 'A' in visited = True → SKIP. Child B → not visited → add. The self-loop is handled correctly because A is in visited from initialization.`},
+
+{type:'tricky', q:`TRICKY: What is the output of this code?
+<pre class="q-code">from collections import deque
+d = deque([1,2,3])
+d.appendleft(0)
+d.append(4)
+print(d.popleft(), d.pop())</pre>`,
+ opts:['0 4','1 3','0 3','1 4'], ans:0,
+ exp:`appendleft(0) → deque([0,1,2,3]). append(4) → deque([0,1,2,3,4]). popleft() = 0. pop() = 4. Print: 0 4.`},
+
+{type:'tricky', q:`TRICKY: In BFS path reconstruction, why must the path always contain the start node?`,
+ opts:[
+   'Because the while loop condition ensures it',
+   'Because parents[start] = None, and while goal_node terminates when node becomes None (after appending start)',
+   'It may NOT contain start node in some implementations',
+   'Because visited always includes start'
+ ], ans:1,
+ exp:`parents[start] = None. When the loop reaches start, it appends start to path, then sets goal_node = parents[start] = None. <code>while None:</code> is False, loop stops. Start IS appended before the loop stops. ✓`},
+
+{type:'tricky', q:`TRICKY: You modify BFS to check goal on PUSH (adding to queue) rather than on POP (dequeue). What changes?`,
+ opts:[
+   'The algorithm finds a different (longer) path',
+   'Early termination — stops as soon as goal is queued, slightly faster',
+   'The algorithm may miss the goal',
+   'No difference whatsoever'
+ ], ans:1,
+ exp:`Checking on push is actually more efficient — you terminate as soon as goal is added to queue without waiting to dequeue it. The path found is the SAME because the node is discovered at the same BFS level. This optimization is often used in practice.`},
+];
+
+// ─── Quiz Logic ───
+let answered = 0, correct = 0, wrong = 0;
+let currentFilter = 'all';
+
+function renderQuiz(filter) {
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = '';
+  const filtered = filter === 'all' ? questions : questions.filter(q => q.type === filter);
+  filtered.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.dataset.idx = questions.indexOf(q);
+    card.dataset.type = q.type;
+    card.dataset.answered = 'false';
+    const typeBadge = {tracing:'badge-bfs', code:'badge-trick', theoretical:'badge-dfs', tricky:'badge-trick'};
+    const typeLabel = {tracing:'Tracing', code:'Code', theoretical:'Theory', tricky:'⚡ Tricky'};
+    card.innerHTML = `
+      <div class="q-meta">
+        <span class="q-num">Q${idx+1}</span>
+        <span class="badge ${typeBadge[q.type]}">${typeLabel[q.type]}</span>
+      </div>
+      <div class="q-text">${q.q}</div>
+      <div class="options">
+        ${q.opts.map((o,i)=>`
+          <button class="option-btn" onclick="selectAnswer(this, ${questions.indexOf(q)}, ${i})" data-opt="${i}">
+            <span class="opt-letter">${'ABCD'[i]}</span>
+            <span>${o}</span>
+          </button>`).join('')}
+      </div>
+      <div class="explanation" id="exp-${questions.indexOf(q)}">${q.exp}</div>`;
+    container.appendChild(card);
+  });
+}
+
+function selectAnswer(btn, qIdx, optIdx) {
+  const card = btn.closest('.question-card');
+  if (card.dataset.answered === 'true') return;
+  card.dataset.answered = 'true';
+
+  const q = questions[qIdx];
+  const btns = card.querySelectorAll('.option-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const exp = document.getElementById('exp-' + qIdx);
+  if (optIdx === q.ans) {
+    btn.classList.add('correct-ans');
+    card.classList.add('correct');
+    exp.classList.add('show');
+    correct++;
+    document.getElementById('score-correct').textContent = correct;
+  } else {
+    btn.classList.add('wrong-ans');
+    card.classList.add('wrong');
+    btns[q.ans].classList.add('correct-ans');
+    exp.classList.add('show', 'wrong-exp');
+    wrong++;
+    document.getElementById('score-wrong').textContent = wrong;
+  }
+  answered++;
+  document.getElementById('score-total').textContent = answered + '/50';
+  document.getElementById('progress-bar').style.width = (answered/50*100) + '%';
+}
+
+function filterQ(type, btn) {
+  currentFilter = type;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderQuiz(type);
+}
+
+function showTab(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+renderQuiz('all');
+</script>
+</body>
+</html>
